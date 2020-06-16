@@ -75,6 +75,7 @@ typedef struct {
 	char *host;
 	char *user;
 	char *pass;
+	char *params;
 } mysql_db_info_t;
 
 typedef struct {

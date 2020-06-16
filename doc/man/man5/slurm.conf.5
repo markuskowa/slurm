@@ -106,6 +106,22 @@ Only used with systems using SlurmDBD, ignored otherwise.
 Also see \fBDefaultStorageHost\fR.
 
 .TP
+\fBAccountingStorageParameters\fR
+Comma separated list of key-value pair parameters. Currently
+supported values include:
+.RS
+.TP 2
+\fBSSL_CA\fR
+The path name of the Certificate Authority (CA) certificate file.
+.TP
+\fBSSL_CERT\fR
+The path name of the client public key certificate file.
+.TP
+\fBSSL_KEY\fR
+The path name of the client private key file.
+.RE
+
+.TP
 \fBAccountingStoragePass\fR
 The password used to gain access to the database to store the
 accounting data.  Only used for database type storage plugins, ignored
