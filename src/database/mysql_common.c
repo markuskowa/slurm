@@ -585,9 +585,11 @@ static int _mysql_make_table_current(mysql_conn_t *mysql_conn, char *table_name,
 	return SLURM_SUCCESS;
 }
 
-void _set_mysql_opts(MYSQL *db_conn, const char *options)
+void _set_mysql_ssl_opts(MYSQL *db_conn, const char *options)
 {
 	char *tmp_opts, *token, *save_ptr = NULL;
+	const char *key = NULL, *cert = NULL, *ca = NULL, *capath = NULL;
+	const char *cipher = NULL;
 
 	if (!options)
 		return;
@@ -596,7 +598,6 @@ void _set_mysql_opts(MYSQL *db_conn, const char *options)
 	token = strtok_r(tmp_opts, ",", &save_ptr);
 	while (token) {
 		char *opt_str, *val_str = NULL;
-		int opt;
 
 		opt_str = strtok_r(token, "=", &val_str);
 
@@ -604,22 +605,25 @@ void _set_mysql_opts(MYSQL *db_conn, const char *options)
 			error("invalid storage option/val");
 			goto next;
 		}
-#if MYSQL_VERSION_ID >= 50600
-		else if (!xstrcasecmp(opt_str, "SSL_CA"))
-			opt = MYSQL_OPT_SSL_CA;
 		else if (!xstrcasecmp(opt_str, "SSL_CERT"))
-			opt = MYSQL_OPT_SSL_CERT;
+			cert = val_str;
+		else if (!xstrcasecmp(opt_str, "SSL_CA"))
+			ca = val_str;
+		else if (!xstrcasecmp(opt_str, "SSL_CAPATH"))
+			ca = val_str;
 		else if (!xstrcasecmp(opt_str, "SSL_KEY"))
-			opt = MYSQL_OPT_SSL_KEY;
-#endif
+			key = val_str;
+		else if (!xstrcasecmp(opt_str, "SSL_CIPHER"))
+			key = val_str;
 		else {
 			error("invalid storage option '%s'", opt_str);
 			goto next;
 		}
-		mysql_options(db_conn, opt, val_str);
 next:
 		token = strtok_r(NULL, ",", &save_ptr);
 	}
+
+	mysql_ssl_set(db_conn, key, cert, ca, capath, cipher);
 
 	xfree(tmp_opts);
 }
@@ -638,7 +642,7 @@ static int _create_db(char *db_name, mysql_db_info_t *db_info)
 		if (!(mysql_db = mysql_init(mysql_db)))
 			fatal("mysql_init failed: %s", mysql_error(mysql_db));
 
-		_set_mysql_opts(mysql_db, db_info->params);
+		_set_mysql_ssl_opts(mysql_db, db_info->params);
 
 		db_host = db_info->host;
 		db_ptr = mysql_real_connect(mysql_db,
@@ -787,7 +791,7 @@ extern int mysql_db_get_db_connection(mysql_conn_t *mysql_conn, char *db_name,
 	mysql_options(mysql_conn->db_conn, MYSQL_OPT_CONNECT_TIMEOUT,
 		      (char *)&my_timeout);
 
-	_set_mysql_opts(mysql_conn->db_conn, db_info->params);
+	_set_mysql_ssl_opts(mysql_conn->db_conn, db_info->params);
 
 	while (!storage_init) {
 		debug2("Attempting to connect to %s:%d", db_host,
@@ -808,8 +812,8 @@ extern int mysql_db_get_db_connection(mysql_conn_t *mysql_conn, char *db_name,
 				 * connect will fail. Setting the options again
 				 * fixes it.
 				 */
-				_set_mysql_opts(mysql_conn->db_conn,
-						db_info->params);
+				_set_mysql_ssl_opts(mysql_conn->db_conn,
+						    db_info->params);
 				continue;
 			}
 
