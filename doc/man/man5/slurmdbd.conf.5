@@ -559,14 +559,20 @@ Comma separated list of key-value pair parameters. Currently
 supported values include:
 .RS
 .TP 2
-\fBSSL_CA\fR
-The path name of the Certificate Authority (CA) certificate file.
-.TP
 \fBSSL_CERT\fR
 The path name of the client public key certificate file.
 .TP
+\fBSSL_CA\fR
+The path name of the Certificate Authority (CA) certificate file.
+.TP
+\fBSSL_CAPATH\fR
+The path name of the directory that contains trusted SSL CA certificate files.
+.TP
 \fBSSL_KEY\fR
 The path name of the client private key file.
+.TP
+\fBSSL_CIPHER\fR
+The list of permissible ciphers for SSL encryption.
 .RE
 
 .TP
