@@ -610,11 +610,11 @@ void _set_mysql_ssl_opts(MYSQL *db_conn, const char *options)
 		else if (!xstrcasecmp(opt_str, "SSL_CA"))
 			ca = val_str;
 		else if (!xstrcasecmp(opt_str, "SSL_CAPATH"))
-			ca = val_str;
+			capath = val_str;
 		else if (!xstrcasecmp(opt_str, "SSL_KEY"))
 			key = val_str;
 		else if (!xstrcasecmp(opt_str, "SSL_CIPHER"))
-			key = val_str;
+			cipher = val_str;
 		else {
 			error("invalid storage option '%s'", opt_str);
 			goto next;
